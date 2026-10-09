@@ -30,7 +30,7 @@ const pool = mysql.createPool({
 // ===============================
 // SERVE FRONTEND FILES
 // ===============================
-const publicPath = path.join(__dirname, 'public');
+const publicPath = path.join(__dirname, '');
 
 app.use(express.static(publicPath));
 
