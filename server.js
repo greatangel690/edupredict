@@ -280,4 +280,4 @@ const port = process.env.PORT || 10000;
 app.listen(port, () => {
     console.log(`EduPredict server running on port ${port}`);
 });
-```
+
