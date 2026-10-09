@@ -275,7 +275,7 @@ app.delete('/api/students', async (req, res) => {
 // ===============================
 // START SERVER
 // ===============================
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 10000;
 
 app.listen(port, () => {
     console.log(`EduPredict server running on port ${port}`);
