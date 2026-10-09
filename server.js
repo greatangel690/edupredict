@@ -1,32 +1,46 @@
+```javascript
 require('dotenv').config();
 
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
+const path = require('path');
 
 const app = express();
 
 // ===============================
-// Middleware
+// MIDDLEWARE
 // ===============================
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
 
 // ===============================
-// MySQL Database Connection
+// MYSQL DATABASE CONNECTION
 // ===============================
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    port: Number(process.env.DB_PORT) || 3306,
     waitForConnections: true,
     connectionLimit: 10
 });
 
 // ===============================
-// Prediction Function
+// SERVE FRONTEND FILES
+// ===============================
+const publicPath = path.join(__dirname, 'public');
+
+app.use(express.static(publicPath));
+
+// Homepage
+app.get('/', (req, res) => {
+    res.sendFile(path.join(publicPath, 'index.html'));
+});
+
+// ===============================
+// PREDICTION FUNCTION
 // ===============================
 function prediction(assignment, test, examination, attendance) {
     const total = Math.round(
@@ -40,30 +54,23 @@ function prediction(assignment, test, examination, attendance) {
     if (total >= 70) {
         performance = 'Excellent Performance';
 
-        risk =
-            attendance < 75
-                ? 'Moderate Intervention Risk'
-                : 'Low Intervention Risk';
+        risk = attendance < 75
+            ? 'Moderate Intervention Risk'
+            : 'Low Intervention Risk';
 
         recommendation =
             'Maintain consistent study habits and assessment preparation.';
-    } 
-    
-    else if (total >= 50) {
+    } else if (total >= 50) {
         performance = 'Good Performance';
 
-        risk =
-            attendance < 75
-                ? 'High Intervention Risk'
-                : 'Moderate Intervention Risk';
+        risk = attendance < 75
+            ? 'High Intervention Risk'
+            : 'Moderate Intervention Risk';
 
         recommendation =
             'Provide targeted academic support and monitor weaker areas and attendance.';
-    } 
-    
-    else {
+    } else {
         performance = 'Needs Attention';
-
         risk = 'High Intervention Risk';
 
         recommendation =
@@ -89,8 +96,10 @@ app.get('/api/students', async (req, res) => {
 
         res.json(rows);
     } catch (e) {
+        console.error('Get students error:', e.message);
+
         res.status(500).json({
-            error: e.message
+            error: 'Unable to retrieve students.'
         });
     }
 });
@@ -115,52 +124,33 @@ app.post('/api/predict', async (req, res) => {
             examination
         } = req.body;
 
-        // Check required fields
         if (!studentId || !fullName) {
             return res.status(400).json({
-                error: 'Student ID and name are required'
+                error: 'Student ID and name are required.'
             });
         }
 
-        // ===============================
         // Validate and limit scores
-        // ===============================
-
         const a = Math.max(
-            0,
-            Math.min(10, Number(assignment) || 0)
+            0, Math.min(10, Number(assignment) || 0)
         );
 
         const t = Math.max(
-            0,
-            Math.min(20, Number(test) || 0)
+            0, Math.min(20, Number(test) || 0)
         );
 
         const e = Math.max(
-            0,
-            Math.min(70, Number(examination) || 0)
+            0, Math.min(70, Number(examination) || 0)
         );
 
         const att = Math.max(
-            0,
-            Math.min(100, Number(attendance) || 0)
+            0, Math.min(100, Number(attendance) || 0)
         );
 
-        // ===============================
-        // Generate Prediction
-        // ===============================
+        // Generate prediction
+        const p = prediction(a, t, e, att);
 
-        const p = prediction(
-            a,
-            t,
-            e,
-            att
-        );
-
-        // ===============================
-        // Insert / Update Student
-        // ===============================
-
+        // Save student or update existing student
         const sql = `
             INSERT INTO students (
                 student_id,
@@ -180,7 +170,6 @@ app.post('/api/predict', async (req, res) => {
                 risk_level,
                 recommendation
             )
-
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 
             ON DUPLICATE KEY UPDATE
@@ -220,18 +209,16 @@ app.post('/api/predict', async (req, res) => {
             p.recommendation
         ]);
 
-        // ===============================
-        // Send Response
-        // ===============================
-
         res.json({
             success: true,
             prediction: p
         });
 
     } catch (e) {
+        console.error('Prediction error:', e.message);
+
         res.status(500).json({
-            error: e.message
+            error: 'Unable to save student or generate prediction.'
         });
     }
 });
@@ -241,18 +228,26 @@ app.post('/api/predict', async (req, res) => {
 // ===============================
 app.delete('/api/students/:id', async (req, res) => {
     try {
-        await pool.execute(
+        const [result] = await pool.execute(
             'DELETE FROM students WHERE id = ?',
             [req.params.id]
         );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                error: 'Student not found.'
+            });
+        }
 
         res.json({
             success: true
         });
 
     } catch (e) {
+        console.error('Delete student error:', e.message);
+
         res.status(500).json({
-            error: e.message
+            error: 'Unable to delete student.'
         });
     }
 });
@@ -262,17 +257,17 @@ app.delete('/api/students/:id', async (req, res) => {
 // ===============================
 app.delete('/api/students', async (req, res) => {
     try {
-        await pool.query(
-            'DELETE FROM students'
-        );
+        await pool.query('DELETE FROM students');
 
         res.json({
             success: true
         });
 
     } catch (e) {
+        console.error('Delete all error:', e.message);
+
         res.status(500).json({
-            error: e.message
+            error: 'Unable to delete students.'
         });
     }
 });
@@ -283,7 +278,6 @@ app.delete('/api/students', async (req, res) => {
 const port = process.env.PORT || 3000;
 
 app.listen(port, () => {
-    console.log(
-        `EduPredict running on http://localhost:${port}`
-    );
+    console.log(`EduPredict server running on port ${port}`);
 });
+```
