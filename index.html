@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+```
+<title>EduPredict</title>
+
+<link rel="stylesheet" href="style.css">
+```
+
+</head>
+
+<body>
+
+```
+<!-- =========================
+     HEADER
+========================== -->
+<header>
+
+    <div class="brand">
+        EP <span>EduPredict</span>
+    </div>
+
+    <nav>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#prediction">Prediction</a>
+        <a href="#records">Records</a>
+    </nav>
+
+</header>
+
+
+<!-- =========================
+     MAIN CONTENT
+========================== -->
+<main>
+
+    <!-- =========================
+         DASHBOARD / HERO SECTION
+    ========================== -->
+    <section class="hero" id="dashboard">
+
+        <div>
+
+            <span class="pill">
+                DATA-DRIVEN • EARLY INTERVENTION
+            </span>
+
+            <h1>
+                Predict. Understand. <b>Improve.</b>
+            </h1>
+
+            <p>
+                Academic Performance Prediction System for analyzing
+                student records, predicting performance and supporting
+                early intervention.
+            </p>
+
+            <a class="button" href="#prediction">
+                Start Prediction
+            </a>
+
+        </div>
+
+
+        <!-- Analytics Card -->
+        <div class="hero-card">
+
+            <h3>Academic Analytics</h3>
+
+            <div class="stats">
+
+                <div>
+                    <small>Students</small>
+                    <strong id="studentCount">0</strong>
+                </div>
+
+                <div>
+                    <small>Average</small>
+                    <strong id="averageScore">0%</strong>
+                </div>
+
+                <div>
+                    <small>At Risk</small>
+                    <strong id="riskCount">0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="bars">
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+                <i></i>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         PREDICTION SECTION
+    ========================== -->
+    <section id="prediction" class="section">
+
+        <h2>Student Prediction</h2>
+
+        <p class="lead">
+            Enter the student's information and assessment scores.
+            The prediction is saved directly to MySQL.
+        </p>
+
+
+        <div class="grid">
+
+            <!-- Prediction Form -->
+            <form id="predictionForm">
+
+                <input
+                    id="studentId"
+                    placeholder="Student ID *"
+                    required
+                >
+
+                <input
+                    id="fullName"
+                    placeholder="Full name *"
+                    required
+                >
+
+                <select id="gender">
+                    <option value="">Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+
+                <input
+                    id="dob"
+                    type="date"
+                >
+
+                <input
+                    id="department"
+                    placeholder="Department"
+                >
+
+                <select id="level">
+
+                    <option value="100 Level">
+                        100 Level
+                    </option>
+
+                    <option value="200 Level">
+                        200 Level
+                    </option>
+
+                    <option value="300 Level">
+                        300 Level
+                    </option>
+
+                    <option value="400 Level">
+                        400 Level
+                    </option>
+
+                    <option value="500 Level">
+                        500 Level
+                    </option>
+
+                </select>
+
+
+                <select id="semester">
+
+                    <option value="First Semester">
+                        First Semester
+                    </option>
+
+                    <option value="Second Semester">
+                        Second Semester
+                    </option>
+
+                </select>
+
+
+                <input
+                    id="course"
+                    placeholder="Course / Subject"
+                >
+
+
+                <input
+                    id="attendance"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value="80"
+                    placeholder="Attendance %"
+                >
+
+
+                <input
+                    id="assignment"
+                    type="number"
+                    min="0"
+                    max="10"
+                    value="8"
+                    placeholder="Assignment / 10"
+                >
+
+
+                <input
+                    id="test"
+                    type="number"
+                    min="0"
+                    max="20"
+                    value="15"
+                    placeholder="Test / 20"
+                >
+
+
+                <input
+                    id="examination"
+                    type="number"
+                    min="0"
+                    max="70"
+                    value="56"
+                    placeholder="Examination / 70"
+                >
+
+
+                <button
+                    class="button"
+                    type="submit"
+                >
+                    Generate Prediction & Save
+                </button>
+
+            </form>
+
+
+            <!-- Prediction Result -->
+            <div class="result">
+
+                <small>
+                    Predicted Overall Performance
+                </small>
+
+                <strong id="score">
+                    0%
+                </strong>
+
+                <div class="progress">
+                    <span id="fill"></span>
+                </div>
+
+                <h3 id="performance">
+                    Waiting for prediction
+                </h3>
+
+                <span id="risk" class="risk">
+                    No prediction yet
+                </span>
+
+                <p id="recommendation">
+                    Complete the form to generate an academic prediction.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =========================
+         STUDENT RECORDS SECTION
+    ========================== -->
+    <section id="records" class="section">
+
+        <div class="section-head">
+
+            <div>
+
+                <h2>
+                    Student Records
+                </h2>
+
+                <p class="lead left">
+                    Saved academic records and predictions.
+                </p>
+
+            </div>
+
+            <button
+                id="clearAll"
+                class="danger"
+            >
+                Clear All
+            </button>
+
+        </div>
+
+
+        <!-- Records Table -->
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+
+                    <tr>
+
+                        <th>Student</th>
+                        <th>ID</th>
+                        <th>Department</th>
+                        <th>Level</th>
+                        <th>Scores</th>
+                        <th>Total</th>
+                        <th>Performance</th>
+                        <th>Risk</th>
+                        <th>Action</th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="recordsBody">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<!-- =========================
+     FOOTER
+========================== -->
+<footer>
+
+    © 2026 EduPredict • Academic Performance Prediction System
+
+</footer>
+
+
+<!-- =========================
+     JAVASCRIPT
+========================== -->
+<script src="app.js"></script>
+```
+
+</body>
+
+</html>
